@@ -1,0 +1,32 @@
+name: Deploy to EC2
+
+# 触发条件：当代码推送到 main 分支时[citation:3][citation:5]
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 步骤1：检出代码（为了让 Actions 运行环境能访问你的仓库文件）[citation:3][citation:11]
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 步骤2：通过 SSH 连接并执行部署命令
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          # 在 EC2 上要执行的脚本，这是核心[citation:3][citation:11]
+          script: |
+            git config --global --add safe.directory '*'
+            cd /home/ec2-user/aws_test/my-vue3-ts-app
+            git fetch origin main
+            git reset --hard origin/main
+            npm install
+            npm run build
+            sudo cp -r dist/* /var/www/html
+            sudo systemctl start nginx
