@@ -23,9 +23,9 @@ jobs:
           # 在 EC2 上要执行的脚本，这是核心[citation:3][citation:11]
           script: |
             git config --global --add safe.directory '*'
+            cd /home/ec2-user/aws_test/my-vue3-ts-app
             git fetch origin main
             git reset --hard origin/main
-            cd /home/ec2-user/aws_test/my-vue3-ts-app
             npm install
             npm run build
             sudo cp -r dist/* /var/www/html
