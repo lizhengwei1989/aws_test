@@ -25,12 +25,13 @@ jobs:
             AWS_ACCESS_KEY_ID
             AWS_SECRET_ACCESS_KEY
             AWS_BUCKET_NAME
+            AWS_REGION
           # 在 EC2 上要执行的脚本，这是核心[citation:3][citation:11]
           script: |
             git config --global --add safe.directory '*'
-            cd /home/ec2-user/aws_test/node
             git fetch origin main
             git reset --hard origin/main
+            cd /home/ec2-user/aws_test/node
             npm install
             npm run build
             pm2 restart ecosystem.config.js
