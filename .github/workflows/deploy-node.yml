@@ -22,12 +22,16 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           # 关键：通过 env 将 GitHub Secrets 映射为远程服务器上的环境变量
           envs: |
-            AWS_ACCESS_KEY_ID
-            AWS_SECRET_ACCESS_KEY
-            AWS_BUCKET_NAME
-            AWS_REGION
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
           # 在 EC2 上要执行的脚本，这是核心[citation:3][citation:11]
           script: |
+            echo "AWS_REGION: $AWS_REGION"
+            echo "AWS_BUCKET_NAME: $AWS_BUCKET_NAME"
+            echo "AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:0:4}...${AWS_ACCESS_KEY_ID: -4}"
+            echo "AWS_SECRET_ACCESS_KEY: ${#AWS_SECRET_ACCESS_KEY} characters long"
             git config --global --add safe.directory '*'
             cd /home/ec2-user/aws_test/node
             git fetch origin main
