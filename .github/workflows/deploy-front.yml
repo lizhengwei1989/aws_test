@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy to EC2 Vue
 
 # 触发条件：当代码推送到 main 分支时[citation:3][citation:5]
 on:
