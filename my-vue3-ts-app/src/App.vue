@@ -4,6 +4,8 @@ import { ref } from 'vue'
 const selectedFile = ref(null)
 const isUploading = ref(false)
 const uploadProgress = ref(0)
+const key = ref('')
+const imgUrl = ref('')
 
 // 处理文件选择
 const handleFileChange = (event) => {
@@ -59,6 +61,20 @@ const uploadFile = async () => {
     uploadProgress.value = 0
   }
 }
+const showImage = async () => {
+  const res = await fetch(`/api/image?key=${encodeURIComponent(key.value)}`);
+  if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+  }
+  
+  const data = await res.json();
+  
+  if (data.success) {
+      imgUrl.value = data.url;
+  } else {
+      throw new Error(data.error || '获取图片链接失败');
+  }
+}
 </script>
 
 <template>
@@ -68,5 +84,19 @@ const uploadFile = async () => {
       {{ isUploading ? '上传中...' : '上传到S3' }}
     </button>
     <div v-if="uploadProgress">上传进度：{{ uploadProgress }}%</div>
-  </div>
+    </div>
+  <div>
+    <input type="text" v-model="key" placeholder="输入文件键名" />
+    <button @click="showImage" :disabled="!key">获取文件</button>
+    <img 
+          :src="imgUrl" 
+          alt="S3 图片" 
+          :style="{
+              maxWidth: '100%', 
+              maxHeight: '500px', 
+              borderRadius: '8px',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+          }" 
+      />
+</div>
 </template>

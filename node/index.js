@@ -1,5 +1,5 @@
 import express from 'express';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand  } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import crypto from 'crypto';
 import 'dotenv/config'; 
@@ -46,6 +46,36 @@ app.post('/api/get-upload-url', async (req, res) => {
     console.error('生成预签名URL失败:', error);
     res.status(500).json({ error: '生成上传链接失败' });
   }
+});
+
+
+// API: 获取图片访问链接
+app.get('/api/image', async (req, res) => {
+    try {
+        const { key } = req.query; // 前端传入的文件路径，例如 "folder/photo.jpg"
+        
+        if (!key) {
+            return res.status(400).json({ error: '缺少 key 参数' });
+        }
+
+        const command = new GetObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: key
+        });
+
+        // 生成预签名 URL，有效期 1 小时（3600 秒）
+        const signedUrl = await getSignedUrl(s3, command, { 
+            expiresIn: 3600 
+        });
+
+        res.json({ 
+            success: true, 
+            url: signedUrl 
+        });
+    } catch (error) {
+        console.error('生成预签名 URL 失败:', error);
+        res.status(500).json({ error: '生成图片链接失败' });
+    }
 });
 
 app.listen(3000, () => console.log('后端服务运行在端口3000'));
