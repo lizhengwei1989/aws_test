@@ -18,8 +18,6 @@ const s3 = new S3Client({
 
 const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 
-console.log(process.env)
-
 // API端点：生成预签名上传URL
 app.post('/api/get-upload-url', async (req, res) => {
   const { fileName, fileType } = req.body;
