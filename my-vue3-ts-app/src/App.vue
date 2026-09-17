@@ -82,11 +82,11 @@ const showImage = async () => {
     <button @click="uploadFile" :disabled="!selectedFile || isUploading">
       {{ isUploading ? "上传中..." : "上传到S3" }}
     </button>
-    <div v-if="uploadProgress">上传进度2：{{ uploadProgress }}%</div>
+    <div v-if="uploadProgress">上传进度：{{ uploadProgress }}%</div>
   </div>
   <div>
     <input type="text" v-model="key" placeholder="输入文件键名" />
-    <button @click="showImage" :disabled="!key">获取文件</button>
+    <button @click="showImage" :disabled="!key">获取文件哈哈哈</button>
     <img
       :src="imgUrl"
       alt="S3 图片"
