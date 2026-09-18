@@ -86,7 +86,7 @@ const showImage = async () => {
   </div>
   <div>
     <input type="text" v-model="key" placeholder="输入文件键名" />
-    <button @click="showImage" :disabled="!key">获取文件哈哈哈</button>
+    <button @click="showImage" :disabled="!key">获取文件哈!</button>
     <img
       :src="imgUrl"
       alt="S3 图片"
