@@ -1,11 +1,15 @@
-import express from 'express';
-import { S3Client, PutObjectCommand, GetObjectCommand  } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import crypto from 'crypto';
-import 'dotenv/config'; 
+import express from "express"
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
+import crypto from "crypto"
+import "dotenv/config"
 
-const app = express();
-app.use(express.json());
+const app = express()
+app.use(express.json())
 
 // 初始化S3客户端（这里使用环境变量，绝不要硬编码密钥！）
 const s3 = new S3Client({
@@ -14,68 +18,69 @@ const s3 = new S3Client({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
-});
+})
 
-const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
+const BUCKET_NAME = process.env.AWS_BUCKET_NAME
+
+console.log(process.env)
 
 // API端点：生成预签名上传URL
-app.post('/api/get-upload-url', async (req, res) => {
-  const { fileName, fileType } = req.body;
+app.post("/api/get-upload-url", async (req, res) => {
+  const { fileName, fileType } = req.body
 
-  console.log('收到请求:', { fileName, fileType }); 
+  console.log("收到请求:", { fileName, fileType })
 
   // 验证用户权限、文件名、类型等...
   if (!fileName) {
-    return res.status(400).json({ error: '缺少文件名' });
+    return res.status(400).json({ error: "缺少文件名" })
   }
 
   // 生成一个唯一的对象键（Key），比如按用户ID和日期组织
-  const objectKey = `uploads/${crypto.randomUUID()}-${fileName}`;
+  const objectKey = `uploads/${crypto.randomUUID()}-${fileName}`
 
   const command = new PutObjectCommand({
     Bucket: BUCKET_NAME,
     Key: objectKey,
     ContentType: fileType, // 这个必须和前端上传时设置的Header一致！
-  });
+  })
 
   try {
     // 生成一个有效期15分钟（900秒）的URL
-    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 900 });
-    res.json({ uploadUrl, objectKey });
+    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 900 })
+    res.json({ uploadUrl, objectKey })
   } catch (error) {
-    console.error('生成预签名URL失败:', error);
-    res.status(500).json({ error: '生成上传链接失败' });
+    console.error("生成预签名URL失败:", error)
+    res.status(500).json({ error: "生成上传链接失败" })
   }
-});
-
+})
 
 // API: 获取图片访问链接
-app.get('/api/image', async (req, res) => {
-    try {
-        const { key } = req.query; // 前端传入的文件路径，例如 "folder/photo.jpg"
-        
-        if (!key) {
-            return res.status(400).json({ error: '缺少 key 参数' });
-        }
+app.get("/api/image", async (req, res) => {
+  try {
+    const { key } = req.query // 前端传入的文件路径，例如 "folder/photo.jpg"
 
-        const command = new GetObjectCommand({
-            Bucket: BUCKET_NAME,
-            Key: key
-        });
-
-        // 生成预签名 URL，有效期 1 小时（3600 秒）
-        const signedUrl = await getSignedUrl(s3, command, { 
-            expiresIn: 3600 
-        });
-
-        res.json({ 
-            success: true, 
-            url: signedUrl 
-        });
-    } catch (error) {
-        console.error('生成预签名 URL 失败:', error);
-        res.status(500).json({ error: '生成图片链接失败' });
+    if (!key) {
+      return res.status(400).json({ error: "缺少 key 参数" })
     }
-});
 
-app.listen(3000, () => console.log('后端服务运行在端口3000'));
+    const command = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+    })
+
+    // 生成预签名 URL，有效期 1 小时（3600 秒）
+    const signedUrl = await getSignedUrl(s3, command, {
+      expiresIn: 3600,
+    })
+
+    res.json({
+      success: true,
+      url: signedUrl,
+    })
+  } catch (error) {
+    console.error("生成预签名 URL 失败:", error)
+    res.status(500).json({ error: "生成图片链接失败" })
+  }
+})
+
+app.listen(3000, () => console.log("后端服务运行在端口3000"))
